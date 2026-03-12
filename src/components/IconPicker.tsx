@@ -32,7 +32,7 @@ export const ICON_OPTIONS = [
   { name: 'CreditCard', icon: CreditCard }, { name: 'DollarSign', icon: DollarSign }, { name: 'Truck', icon: Truck },
   { name: 'Package', icon: Package }, { name: 'Gift', icon: Gift }, { name: 'Coffee', icon: Coffee },
   { name: 'Utensils', icon: Utensils }, { name: 'Scissors', icon: Scissors }, { name: 'Wrench', icon: Wrench },
-  { name: 'Settings', icon: Settings }, { name: 'Tool', icon: Tool }, { name: 'Cpu', icon: Cpu },
+  { name: 'Settings', icon: Settings }, { name: 'Wrench2', icon: Wrench }, { name: 'Cpu', icon: Cpu },
   { name: 'Users', icon: Users }, { name: 'UserPlus', icon: UserPlus }, { name: 'UserCheck', icon: UserCheck },
   { name: 'User', icon: User }, { name: 'Key', icon: Key }, { name: 'Lock', icon: Lock },
   { name: 'Unlock', icon: Unlock }, { name: 'Eye', icon: Eye }, { name: 'Search', icon: Search },
