@@ -86,7 +86,7 @@
     border-color: hsl(var(--success));
   }
   .border-completed {
-    border-color: hsl(var(--primary));
+    border-color: hsl(var(--success));
   }
   .border-inactive {
     border-color: hsl(var(--primary));

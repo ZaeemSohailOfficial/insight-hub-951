@@ -16,8 +16,10 @@ interface AppState {
   setExpenseCategories: (c: ExpenseCategory[]) => void;
   addClient: (c: Client) => void;
   updateClient: (c: Client) => void;
+  deleteClient: (id: string) => void;
   addEmployee: (e: Employee) => void;
   updateEmployee: (e: Employee) => void;
+  deleteEmployee: (id: string) => void;
   addExpense: (e: PersonalExpense) => void;
   updateExpense: (e: PersonalExpense) => void;
   deleteExpense: (id: string) => void;
@@ -49,8 +51,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const addClient = (c: Client) => setClients(prev => [...prev, c]);
   const updateClient = (c: Client) => setClients(prev => prev.map(x => x.id === c.id ? c : x));
+  const deleteClient = (id: string) => setClients(prev => prev.filter(x => x.id !== id));
   const addEmployee = (e: Employee) => setEmployees(prev => [...prev, e]);
   const updateEmployee = (e: Employee) => setEmployees(prev => prev.map(x => x.id === e.id ? e : x));
+  const deleteEmployee = (id: string) => setEmployees(prev => prev.filter(x => x.id !== id));
   const addExpense = (e: PersonalExpense) => setExpenses(prev => [...prev, e]);
   const updateExpense = (e: PersonalExpense) => setExpenses(prev => prev.map(x => x.id === e.id ? e : x));
   const deleteExpense = (id: string) => setExpenses(prev => prev.filter(x => x.id !== id));
@@ -59,7 +63,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider value={{
       clients, employees, expenses, clientCategories, employeeCategories, expenseCategories,
       setClients, setEmployees, setExpenses, setClientCategories, setEmployeeCategories, setExpenseCategories,
-      addClient, updateClient, addEmployee, updateEmployee, addExpense, updateExpense, deleteExpense,
+      addClient, updateClient, deleteClient, addEmployee, updateEmployee, deleteEmployee, addExpense, updateExpense, deleteExpense,
     }}>
       {children}
     </AppContext.Provider>
