@@ -4,6 +4,7 @@ import { Employee, EmployeeContract } from '@/types';
 import CategoryManager from '@/components/CategoryManager';
 import FileUploader from '@/components/FileUploader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,11 +17,11 @@ import { cn } from '@/lib/utils';
 import { format, differenceInDays } from 'date-fns';
 import {
   Plus, CalendarIcon, ArrowUpDown, ChevronLeft, Edit, RefreshCw, DollarSign,
-  Clock, User, Mail, Phone, FileText, CheckCircle, Loader2, Briefcase, TrendingUp
+  Clock, Search, Trash2, Mail, Phone, FileText, Briefcase, Download
 } from 'lucide-react';
 
 export default function EmployeePanel() {
-  const { employees, employeeCategories, setEmployeeCategories, addEmployee, updateEmployee } = useAppState();
+  const { employees, employeeCategories, setEmployeeCategories, addEmployee, updateEmployee, deleteEmployee } = useAppState();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [addOpen, setAddOpen] = useState(false);
   const [viewing, setViewing] = useState<Employee | null>(null);
@@ -28,38 +29,42 @@ export default function EmployeePanel() {
   const [renewing, setRenewing] = useState<Employee | null>(null);
   const [sortBy, setSortBy] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', position: '',
-    categories: [] as string[], salary: '',
-    startDate: undefined as Date | undefined,
-    endDate: undefined as Date | undefined,
-    mouDetails: '', mouFiles: [] as any[],
-    additionalInfo: '', status: 'active' as 'active' | 'inactive',
-  });
+  // Individual form fields to avoid cursor loss
+  const [fName, setFName] = useState('');
+  const [fEmail, setFEmail] = useState('');
+  const [fPhone, setFPhone] = useState('');
+  const [fPosition, setFPosition] = useState('');
+  const [fCategories, setFCategories] = useState<string[]>([]);
+  const [fSalary, setFSalary] = useState('');
+  const [fStartDate, setFStartDate] = useState<Date | undefined>();
+  const [fEndDate, setFEndDate] = useState<Date | undefined>();
+  const [fMouDetails, setFMouDetails] = useState('');
+  const [fMouFiles, setFMouFiles] = useState<any[]>([]);
+  const [fAdditionalInfo, setFAdditionalInfo] = useState('');
+  const [fStatus, setFStatus] = useState<'active' | 'inactive'>('active');
 
-  const resetForm = () => setFormData({
-    name: '', email: '', phone: '', position: '',
-    categories: [], salary: '', startDate: undefined, endDate: undefined,
-    mouDetails: '', mouFiles: [], additionalInfo: '', status: 'active',
-  });
+  const resetForm = () => {
+    setFName(''); setFEmail(''); setFPhone(''); setFPosition('');
+    setFCategories([]); setFSalary(''); setFStartDate(undefined); setFEndDate(undefined);
+    setFMouDetails(''); setFMouFiles([]); setFAdditionalInfo(''); setFStatus('active');
+  };
 
   const handleAdd = () => {
     const emp: Employee = {
       id: crypto.randomUUID(),
-      name: formData.name, email: formData.email, phone: formData.phone,
-      position: formData.position, categories: formData.categories,
-      salary: parseFloat(formData.salary) || 0,
-      startDate: formData.startDate?.toISOString() || '',
-      endDate: formData.endDate?.toISOString() || '',
-      mouDetails: formData.mouDetails, mouFiles: formData.mouFiles,
-      additionalInfo: formData.additionalInfo, status: formData.status,
+      name: fName, email: fEmail, phone: fPhone, position: fPosition,
+      categories: fCategories, salary: parseFloat(fSalary) || 0,
+      startDate: fStartDate?.toISOString() || '', endDate: fEndDate?.toISOString() || '',
+      mouDetails: fMouDetails, mouFiles: fMouFiles,
+      additionalInfo: fAdditionalInfo, status: fStatus,
       contracts: [{
         id: crypto.randomUUID(),
-        startDate: formData.startDate?.toISOString() || '',
-        endDate: formData.endDate?.toISOString() || '',
-        salary: parseFloat(formData.salary) || 0,
-        mouDetails: formData.mouDetails, mouFiles: formData.mouFiles, isRenewal: false,
+        startDate: fStartDate?.toISOString() || '', endDate: fEndDate?.toISOString() || '',
+        salary: parseFloat(fSalary) || 0,
+        mouDetails: fMouDetails, mouFiles: fMouFiles, isRenewal: false,
       }],
       createdAt: new Date().toISOString(),
     };
@@ -68,38 +73,37 @@ export default function EmployeePanel() {
     setAddOpen(false);
   };
 
-  const [renewData, setRenewData] = useState({
-    startDate: undefined as Date | undefined, endDate: undefined as Date | undefined,
-    salary: '', mouDetails: '', mouFiles: [] as any[],
-  });
+  const [rStartDate, setRStartDate] = useState<Date | undefined>();
+  const [rEndDate, setREndDate] = useState<Date | undefined>();
+  const [rSalary, setRSalary] = useState('');
+  const [rMouDetails, setRMouDetails] = useState('');
+  const [rMouFiles, setRMouFiles] = useState<any[]>([]);
 
   const handleRenew = () => {
     if (!renewing) return;
     const nc: EmployeeContract = {
       id: crypto.randomUUID(),
-      startDate: renewData.startDate?.toISOString() || '',
-      endDate: renewData.endDate?.toISOString() || '',
-      salary: parseFloat(renewData.salary) || 0,
-      mouDetails: renewData.mouDetails, mouFiles: renewData.mouFiles, isRenewal: true,
+      startDate: rStartDate?.toISOString() || '', endDate: rEndDate?.toISOString() || '',
+      salary: parseFloat(rSalary) || 0,
+      mouDetails: rMouDetails, mouFiles: rMouFiles, isRenewal: true,
     };
-    const updated = { ...renewing, contracts: [...renewing.contracts, nc], salary: parseFloat(renewData.salary) || renewing.salary };
+    const updated = { ...renewing, contracts: [...renewing.contracts, nc], salary: parseFloat(rSalary) || renewing.salary };
     updateEmployee(updated);
     setRenewing(null);
     setViewing(updated);
-    setRenewData({ startDate: undefined, endDate: undefined, salary: '', mouDetails: '', mouFiles: [] });
+    setRStartDate(undefined); setREndDate(undefined); setRSalary(''); setRMouDetails(''); setRMouFiles([]);
   };
 
   const handleEdit = () => {
     if (!editing) return;
     const updated: Employee = {
       ...editing,
-      name: formData.name, email: formData.email, phone: formData.phone,
-      position: formData.position, categories: formData.categories,
-      salary: parseFloat(formData.salary) || 0,
-      startDate: formData.startDate?.toISOString() || editing.startDate,
-      endDate: formData.endDate?.toISOString() || editing.endDate,
-      mouDetails: formData.mouDetails, mouFiles: formData.mouFiles,
-      additionalInfo: formData.additionalInfo, status: formData.status,
+      name: fName, email: fEmail, phone: fPhone, position: fPosition,
+      categories: fCategories, salary: parseFloat(fSalary) || 0,
+      startDate: fStartDate?.toISOString() || editing.startDate,
+      endDate: fEndDate?.toISOString() || editing.endDate,
+      mouDetails: fMouDetails, mouFiles: fMouFiles,
+      additionalInfo: fAdditionalInfo, status: fStatus,
     };
     updateEmployee(updated);
     setEditing(null);
@@ -108,20 +112,27 @@ export default function EmployeePanel() {
   };
 
   const startEdit = (emp: Employee) => {
-    setFormData({
-      name: emp.name, email: emp.email, phone: emp.phone, position: emp.position,
-      categories: emp.categories, salary: emp.salary.toString(),
-      startDate: emp.startDate ? new Date(emp.startDate) : undefined,
-      endDate: emp.endDate ? new Date(emp.endDate) : undefined,
-      mouDetails: emp.mouDetails, mouFiles: emp.mouFiles,
-      additionalInfo: emp.additionalInfo, status: emp.status,
-    });
+    setFName(emp.name); setFEmail(emp.email); setFPhone(emp.phone); setFPosition(emp.position);
+    setFCategories(emp.categories); setFSalary(emp.salary.toString());
+    setFStartDate(emp.startDate ? new Date(emp.startDate) : undefined);
+    setFEndDate(emp.endDate ? new Date(emp.endDate) : undefined);
+    setFMouDetails(emp.mouDetails); setFMouFiles(emp.mouFiles);
+    setFAdditionalInfo(emp.additionalInfo); setFStatus(emp.status);
     setEditing(emp);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteId) {
+      deleteEmployee(deleteId);
+      if (viewing?.id === deleteId) setViewing(null);
+      setDeleteId(null);
+    }
   };
 
   let filtered = employees.filter(e => {
     if (selectedCategory !== 'all' && !e.categories.includes(selectedCategory)) return false;
     if (filterStatus !== 'all' && e.status !== filterStatus) return false;
+    if (searchQuery && !e.name.toLowerCase().includes(searchQuery.toLowerCase()) && !e.position.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
 
@@ -154,15 +165,15 @@ export default function EmployeePanel() {
     </div>
   );
 
-  const EmpFormFields = () => (
+  const formFields = (
     <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin">
       <div className="grid grid-cols-2 gap-4">
-        <div><Label>Name *</Label><Input value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} placeholder="Employee name" /></div>
-        <div><Label>Position</Label><Input value={formData.position} onChange={e => setFormData(p => ({ ...p, position: e.target.value }))} placeholder="e.g. Developer" /></div>
+        <div><Label>Name *</Label><Input value={fName} onChange={e => setFName(e.target.value)} placeholder="Employee name" /></div>
+        <div><Label>Position</Label><Input value={fPosition} onChange={e => setFPosition(e.target.value)} placeholder="e.g. Developer" /></div>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div><Label>Email</Label><Input value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} /></div>
-        <div><Label>Phone</Label><Input value={formData.phone} onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))} /></div>
+        <div><Label>Email</Label><Input value={fEmail} onChange={e => setFEmail(e.target.value)} /></div>
+        <div><Label>Phone</Label><Input value={fPhone} onChange={e => setFPhone(e.target.value)} /></div>
       </div>
       {employeeCategories.length > 0 && (
         <div>
@@ -170,24 +181,24 @@ export default function EmployeePanel() {
           <div className="flex flex-wrap gap-2 mt-1">
             {employeeCategories.map(cat => (
               <button key={cat.id} type="button"
-                onClick={() => setFormData(p => ({ ...p, categories: p.categories.includes(cat.id) ? p.categories.filter(c => c !== cat.id) : [...p.categories, cat.id] }))}
-                className={cn("px-3 py-1 rounded-md text-sm transition-colors", formData.categories.includes(cat.id) ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}
+                onClick={() => setFCategories(prev => prev.includes(cat.id) ? prev.filter(c => c !== cat.id) : [...prev, cat.id])}
+                className={cn("px-3 py-1 rounded-md text-sm transition-colors", fCategories.includes(cat.id) ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}
               >{cat.name}</button>
             ))}
           </div>
         </div>
       )}
       <div className="grid grid-cols-2 gap-4">
-        <DatePick date={formData.startDate} onSelect={d => setFormData(p => ({ ...p, startDate: d }))} label="Start Date" />
-        <DatePick date={formData.endDate} onSelect={d => setFormData(p => ({ ...p, endDate: d }))} label="End Date" />
+        <DatePick date={fStartDate} onSelect={setFStartDate} label="Start Date" />
+        <DatePick date={fEndDate} onSelect={setFEndDate} label="End Date" />
       </div>
-      <div><Label>Salary (PKR)</Label><Input type="number" value={formData.salary} onChange={e => setFormData(p => ({ ...p, salary: e.target.value }))} placeholder="Monthly salary" /></div>
-      <div><Label>MOU / Contract Details</Label><Textarea value={formData.mouDetails} onChange={e => setFormData(p => ({ ...p, mouDetails: e.target.value }))} rows={3} /></div>
-      <FileUploader files={formData.mouFiles} onChange={f => setFormData(p => ({ ...p, mouFiles: f }))} label="Upload MOU / Documents" />
-      <div><Label>Additional Information</Label><Textarea value={formData.additionalInfo} onChange={e => setFormData(p => ({ ...p, additionalInfo: e.target.value }))} rows={3} /></div>
+      <div><Label>Salary (PKR)</Label><Input type="number" value={fSalary} onChange={e => setFSalary(e.target.value)} placeholder="Monthly salary" /></div>
+      <div><Label>MOU / Contract Details</Label><Textarea value={fMouDetails} onChange={e => setFMouDetails(e.target.value)} rows={3} /></div>
+      <FileUploader files={fMouFiles} onChange={setFMouFiles} label="Upload MOU / Documents" />
+      <div><Label>Additional Information</Label><Textarea value={fAdditionalInfo} onChange={e => setFAdditionalInfo(e.target.value)} rows={3} /></div>
       <div>
         <Label>Status</Label>
-        <Select value={formData.status} onValueChange={v => setFormData(p => ({ ...p, status: v as any }))}>
+        <Select value={fStatus} onValueChange={v => setFStatus(v as any)}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="active">Active</SelectItem>
@@ -212,7 +223,7 @@ export default function EmployeePanel() {
                 {emp.status === 'active' ? 'Active' : 'Inactive'}
               </Badge>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button variant="outline" size="sm" onClick={() => startEdit(emp)} className="gap-1"><Edit className="w-4 h-4" /> Edit</Button>
               <Button variant="outline" size="sm" onClick={() => setRenewing(emp)} className="gap-1"><RefreshCw className="w-4 h-4" /> Renew</Button>
               <Button variant="outline" size="sm" onClick={() => {
@@ -222,6 +233,7 @@ export default function EmployeePanel() {
               }}>
                 {emp.status === 'active' ? 'Mark Inactive' : 'Mark Active'}
               </Button>
+              <Button variant="outline" size="sm" onClick={() => setDeleteId(emp.id)} className="gap-1 text-destructive hover:text-destructive"><Trash2 className="w-4 h-4" /> Delete</Button>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -244,7 +256,7 @@ export default function EmployeePanel() {
               {c.mouDetails && <div className="bg-muted rounded-md p-3 mb-2"><p className="text-sm text-foreground">{c.mouDetails}</p></div>}
               {c.mouFiles.length > 0 && (
                 <div className="flex gap-2 flex-wrap">{c.mouFiles.map(f => (
-                  <a key={f.id} href={f.dataUrl} download={f.name} className="flex items-center gap-1 text-xs text-primary hover:underline"><FileText className="w-3 h-3" />{f.name}</a>
+                  <a key={f.id} href={f.dataUrl} download={f.name} className="flex items-center gap-1 text-xs text-primary hover:underline"><Download className="w-3 h-3" />{f.name}</a>
                 ))}</div>
               )}
             </div>
@@ -256,12 +268,12 @@ export default function EmployeePanel() {
             <DialogHeader><DialogTitle className="font-display">Renew Contract</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <DatePick date={renewData.startDate} onSelect={d => setRenewData(p => ({ ...p, startDate: d }))} label="New Start" />
-                <DatePick date={renewData.endDate} onSelect={d => setRenewData(p => ({ ...p, endDate: d }))} label="New End" />
+                <DatePick date={rStartDate} onSelect={setRStartDate} label="New Start" />
+                <DatePick date={rEndDate} onSelect={setREndDate} label="New End" />
               </div>
-              <div><Label>New Salary (PKR)</Label><Input type="number" value={renewData.salary} onChange={e => setRenewData(p => ({ ...p, salary: e.target.value }))} /></div>
-              <div><Label>MOU Details</Label><Textarea value={renewData.mouDetails} onChange={e => setRenewData(p => ({ ...p, mouDetails: e.target.value }))} rows={3} /></div>
-              <FileUploader files={renewData.mouFiles} onChange={f => setRenewData(p => ({ ...p, mouFiles: f }))} />
+              <div><Label>New Salary (PKR)</Label><Input type="number" value={rSalary} onChange={e => setRSalary(e.target.value)} /></div>
+              <div><Label>MOU Details</Label><Textarea value={rMouDetails} onChange={e => setRMouDetails(e.target.value)} rows={3} /></div>
+              <FileUploader files={rMouFiles} onChange={setRMouFiles} />
               <Button onClick={handleRenew} className="w-full">Add Renewal</Button>
             </div>
           </DialogContent>
@@ -270,10 +282,23 @@ export default function EmployeePanel() {
         <Dialog open={!!editing} onOpenChange={o => { if (!o) { setEditing(null); resetForm(); } }}>
           <DialogContent className="max-w-2xl">
             <DialogHeader><DialogTitle className="font-display">Edit Employee</DialogTitle></DialogHeader>
-            <EmpFormFields />
+            {formFields}
             <Button onClick={handleEdit} className="w-full">Save Changes</Button>
           </DialogContent>
         </Dialog>
+
+        <AlertDialog open={!!deleteId} onOpenChange={o => !o && setDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Employee?</AlertDialogTitle>
+              <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
   }
@@ -289,15 +314,19 @@ export default function EmployeePanel() {
           <DialogTrigger asChild><Button className="gap-2"><Plus className="w-4 h-4" /> Add Employee</Button></DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader><DialogTitle className="font-display">Add Employee</DialogTitle></DialogHeader>
-            <EmpFormFields />
-            <Button onClick={handleAdd} className="w-full" disabled={!formData.name}>Add Employee</Button>
+            {formFields}
+            <Button onClick={handleAdd} className="w-full" disabled={!fName}>Add Employee</Button>
           </DialogContent>
         </Dialog>
       </div>
 
-      <CategoryManager categories={employeeCategories} onAdd={c => setEmployeeCategories([...employeeCategories, c])} selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
+      <CategoryManager categories={employeeCategories} onAdd={c => setEmployeeCategories([...employeeCategories, c])} onUpdate={setEmployeeCategories} selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
 
       <div className="flex gap-3 mb-6 flex-wrap">
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search employees..." className="pl-9" />
+        </div>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
@@ -344,6 +373,19 @@ export default function EmployeePanel() {
           <p className="text-lg">No employees found</p>
         </div>
       )}
+
+      <AlertDialog open={!!deleteId} onOpenChange={o => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Employee?</AlertDialogTitle>
+            <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
