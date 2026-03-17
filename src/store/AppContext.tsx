@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Client, Employee, PersonalExpense, Category, ExpenseCategory } from '@/types';
+import { Client, Employee, PersonalExpense, Category, ExpenseCategory, Invoice, TaskList } from '@/types';
 
 interface AppState {
   clients: Client[];
@@ -8,12 +8,16 @@ interface AppState {
   clientCategories: Category[];
   employeeCategories: Category[];
   expenseCategories: ExpenseCategory[];
+  invoices: Invoice[];
+  taskLists: TaskList[];
   setClients: (c: Client[]) => void;
   setEmployees: (e: Employee[]) => void;
   setExpenses: (e: PersonalExpense[]) => void;
   setClientCategories: (c: Category[]) => void;
   setEmployeeCategories: (c: Category[]) => void;
   setExpenseCategories: (c: ExpenseCategory[]) => void;
+  setInvoices: (i: Invoice[]) => void;
+  setTaskLists: (t: TaskList[]) => void;
   addClient: (c: Client) => void;
   updateClient: (c: Client) => void;
   deleteClient: (id: string) => void;
@@ -23,6 +27,12 @@ interface AppState {
   addExpense: (e: PersonalExpense) => void;
   updateExpense: (e: PersonalExpense) => void;
   deleteExpense: (id: string) => void;
+  addInvoice: (i: Invoice) => void;
+  updateInvoice: (i: Invoice) => void;
+  deleteInvoice: (id: string) => void;
+  addTaskList: (t: TaskList) => void;
+  updateTaskList: (t: TaskList) => void;
+  deleteTaskList: (id: string) => void;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -41,6 +51,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [clientCategories, setClientCategories] = useState<Category[]>(() => loadFromStorage('app_client_cats', []));
   const [employeeCategories, setEmployeeCategories] = useState<Category[]>(() => loadFromStorage('app_employee_cats', []));
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>(() => loadFromStorage('app_expense_cats', []));
+  const [invoices, setInvoices] = useState<Invoice[]>(() => loadFromStorage('app_invoices', []));
+  const [taskLists, setTaskLists] = useState<TaskList[]>(() => loadFromStorage('app_tasklists', []));
 
   useEffect(() => { localStorage.setItem('app_clients', JSON.stringify(clients)); }, [clients]);
   useEffect(() => { localStorage.setItem('app_employees', JSON.stringify(employees)); }, [employees]);
@@ -48,6 +60,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => { localStorage.setItem('app_client_cats', JSON.stringify(clientCategories)); }, [clientCategories]);
   useEffect(() => { localStorage.setItem('app_employee_cats', JSON.stringify(employeeCategories)); }, [employeeCategories]);
   useEffect(() => { localStorage.setItem('app_expense_cats', JSON.stringify(expenseCategories)); }, [expenseCategories]);
+  useEffect(() => { localStorage.setItem('app_invoices', JSON.stringify(invoices)); }, [invoices]);
+  useEffect(() => { localStorage.setItem('app_tasklists', JSON.stringify(taskLists)); }, [taskLists]);
 
   const addClient = (c: Client) => setClients(prev => [...prev, c]);
   const updateClient = (c: Client) => setClients(prev => prev.map(x => x.id === c.id ? c : x));
@@ -58,12 +72,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addExpense = (e: PersonalExpense) => setExpenses(prev => [...prev, e]);
   const updateExpense = (e: PersonalExpense) => setExpenses(prev => prev.map(x => x.id === e.id ? e : x));
   const deleteExpense = (id: string) => setExpenses(prev => prev.filter(x => x.id !== id));
+  const addInvoice = (i: Invoice) => setInvoices(prev => [...prev, i]);
+  const updateInvoice = (i: Invoice) => setInvoices(prev => prev.map(x => x.id === i.id ? i : x));
+  const deleteInvoice = (id: string) => setInvoices(prev => prev.filter(x => x.id !== id));
+  const addTaskList = (t: TaskList) => setTaskLists(prev => [...prev, t]);
+  const updateTaskList = (t: TaskList) => setTaskLists(prev => prev.map(x => x.id === t.id ? t : x));
+  const deleteTaskList = (id: string) => setTaskLists(prev => prev.filter(x => x.id !== id));
 
   return (
     <AppContext.Provider value={{
-      clients, employees, expenses, clientCategories, employeeCategories, expenseCategories,
-      setClients, setEmployees, setExpenses, setClientCategories, setEmployeeCategories, setExpenseCategories,
+      clients, employees, expenses, clientCategories, employeeCategories, expenseCategories, invoices, taskLists,
+      setClients, setEmployees, setExpenses, setClientCategories, setEmployeeCategories, setExpenseCategories, setInvoices, setTaskLists,
       addClient, updateClient, deleteClient, addEmployee, updateEmployee, deleteEmployee, addExpense, updateExpense, deleteExpense,
+      addInvoice, updateInvoice, deleteInvoice, addTaskList, updateTaskList, deleteTaskList,
     }}>
       {children}
     </AppContext.Provider>

@@ -1,6 +1,6 @@
 import { ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Users, Briefcase, Building2, Linkedin, Menu, X, LayoutDashboard, LogOut, KeyRound } from 'lucide-react';
+import { Users, Briefcase, Building2, Linkedin, Menu, X, LayoutDashboard, LogOut, KeyRound, FileText, ListTodo } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,8 @@ const navItems = [
   { path: '/', label: 'Clients', icon: Users },
   { path: '/employees', label: 'Employees', icon: Briefcase },
   { path: '/personal', label: 'Innovelous', icon: Building2 },
+  { path: '/invoices', label: 'Invoices', icon: FileText },
+  { path: '/tasks', label: 'Tasks', icon: ListTodo },
   { path: '/linkedin', label: 'LinkedIn', icon: Linkedin },
 ];
 
