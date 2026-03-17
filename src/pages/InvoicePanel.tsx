@@ -12,8 +12,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Plus, CalendarIcon, Search, FileText, Download, Edit, Trash2, X, Eye } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+// Dynamic imports to avoid chunk conflicts
+const loadPdfLibs = async () => {
+  const [h2c, pdf] = await Promise.all([
+    import('html2canvas'),
+    import('jspdf'),
+  ]);
+  return { html2canvas: h2c.default, jsPDF: pdf.default };
+};
 
 export default function InvoicePanel() {
   const { invoices, addInvoice, updateInvoice, deleteInvoice } = useAppState();
@@ -101,15 +107,17 @@ export default function InvoicePanel() {
 
   const downloadPdf = async (inv: Invoice) => {
     setViewingInvoice(inv);
-    // Wait for render
     await new Promise(r => setTimeout(r, 300));
     const el = invoiceRef.current;
     if (!el) return;
+    const { html2canvas, jsPDF } = await loadPdfLibs();
     const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfW = pdf.internal.pageSize.getWidth();
     const pdfH = (canvas.height * pdfW) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+    pdf.save(`${inv.invoiceNumber || 'invoice'}.pdf`);
     pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
     pdf.save(`${inv.invoiceNumber || 'invoice'}.pdf`);
   };
