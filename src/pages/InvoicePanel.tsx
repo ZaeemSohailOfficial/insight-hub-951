@@ -107,15 +107,17 @@ export default function InvoicePanel() {
 
   const downloadPdf = async (inv: Invoice) => {
     setViewingInvoice(inv);
-    // Wait for render
     await new Promise(r => setTimeout(r, 300));
     const el = invoiceRef.current;
     if (!el) return;
+    const { html2canvas, jsPDF } = await loadPdfLibs();
     const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pdfW = pdf.internal.pageSize.getWidth();
     const pdfH = (canvas.height * pdfW) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+    pdf.save(`${inv.invoiceNumber || 'invoice'}.pdf`);
     pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
     pdf.save(`${inv.invoiceNumber || 'invoice'}.pdf`);
   };
