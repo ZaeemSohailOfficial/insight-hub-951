@@ -12,8 +12,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Plus, CalendarIcon, Search, FileText, Download, Edit, Trash2, X, Eye } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+// Dynamic imports to avoid chunk conflicts
+const loadPdfLibs = async () => {
+  const [h2c, pdf] = await Promise.all([
+    import('html2canvas'),
+    import('jspdf'),
+  ]);
+  return { html2canvas: h2c.default, jsPDF: pdf.default };
+};
 
 export default function InvoicePanel() {
   const { invoices, addInvoice, updateInvoice, deleteInvoice } = useAppState();
