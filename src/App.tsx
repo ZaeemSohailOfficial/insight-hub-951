@@ -9,6 +9,8 @@ import Layout from "@/components/Layout";
 import ClientPanel from "@/pages/ClientPanel";
 import EmployeePanel from "@/pages/EmployeePanel";
 import PersonalPanel from "@/pages/PersonalPanel";
+import InvoicePanel from "@/pages/InvoicePanel";
+import TaskPanel from "@/pages/TaskPanel";
 import LinkedInPanel from "@/pages/LinkedInPanel";
 import LoginPage from "@/pages/LoginPage";
 import NotFound from "./pages/NotFound.tsx";
@@ -40,6 +42,8 @@ const App = () => {
                 <Route path="/" element={<ClientPanel />} />
                 <Route path="/employees" element={<EmployeePanel />} />
                 <Route path="/personal" element={<PersonalPanel />} />
+                <Route path="/invoices" element={<InvoicePanel />} />
+                <Route path="/tasks" element={<TaskPanel />} />
                 <Route path="/linkedin" element={<LinkedInPanel />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -84,5 +84,50 @@ export interface ExpenseCategory {
   icon: string;
 }
 
+export interface InvoiceServiceRow {
+  id: string;
+  service: string;
+  description: string;
+  cost: number;
+}
+
+export interface Invoice {
+  id: string;
+  logoDataUrl?: string;
+  title: string;
+  companyName: string;
+  companyType: string;
+  companyEmail: string;
+  companyPhone: string;
+  companyAddress: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  clientBrand: string;
+  clientOwner: string;
+  clientCnic: string;
+  clientAccount: string;
+  clientAddress: string;
+  services: InvoiceServiceRow[];
+  totalCost: number;
+  founderName: string;
+  founderCnic: string;
+  founderAccount: string;
+  paymentTerms: string;
+  createdAt: string;
+}
+
+export interface TaskItem {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
+export interface TaskList {
+  id: string;
+  name: string;
+  tasks: TaskItem[];
+  createdAt: string;
+}
+
 export type SortOption = 'budget-high' | 'budget-low' | 'timeline-high' | 'timeline-low' | 'salary-high' | 'salary-low';
 export type FilterStatus = 'all' | 'in-progress' | 'completed' | 'active' | 'inactive';
