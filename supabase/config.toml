@@ -1,1 +1,4 @@
 project_id = "ymltraubfbpqfgnlofua"
+
+[functions.process-repetitive-tasks]
+verify_jwt = false
