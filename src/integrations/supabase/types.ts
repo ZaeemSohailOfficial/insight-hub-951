@@ -407,29 +407,90 @@ export type Database = {
         }
         Relationships: []
       }
+      task_categories: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      task_folders: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          position?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          position?: number
+        }
+        Relationships: []
+      }
       task_items: {
         Row: {
           created_at: string
+          custom_interval_days: number | null
           done: boolean
           id: string
+          phase_id: string | null
+          repeat_interval: string | null
           task_list_id: string
+          task_type: string
           text: string
         }
         Insert: {
           created_at?: string
+          custom_interval_days?: number | null
           done?: boolean
           id?: string
+          phase_id?: string | null
+          repeat_interval?: string | null
           task_list_id: string
+          task_type?: string
           text?: string
         }
         Update: {
           created_at?: string
+          custom_interval_days?: number | null
           done?: boolean
           id?: string
+          phase_id?: string | null
+          repeat_interval?: string | null
           task_list_id?: string
+          task_type?: string
           text?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "task_items_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "task_phases"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "task_items_task_list_id_fkey"
             columns: ["task_list_id"]
@@ -441,21 +502,80 @@ export type Database = {
       }
       task_lists: {
         Row: {
+          category_id: string | null
           created_at: string
+          folder_id: string | null
           id: string
           name: string
+          position: number
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          folder_id?: string | null
+          id?: string
+          name: string
+          position?: number
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          folder_id?: string | null
+          id?: string
+          name?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_lists_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "task_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_lists_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "task_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_phases: {
+        Row: {
+          created_at: string
+          id: string
+          is_current: boolean
+          name: string
+          phase_number: number
+          task_list_id: string
         }
         Insert: {
           created_at?: string
           id?: string
-          name: string
+          is_current?: boolean
+          name?: string
+          phase_number?: number
+          task_list_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          is_current?: boolean
           name?: string
+          phase_number?: number
+          task_list_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "task_phases_task_list_id_fkey"
+            columns: ["task_list_id"]
+            isOneToOne: false
+            referencedRelation: "task_lists"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
