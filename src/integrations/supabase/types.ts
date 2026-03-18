@@ -14,7 +14,449 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      client_categories: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      client_contracts: {
+        Row: {
+          budget: number
+          client_id: string
+          costing: number
+          created_at: string
+          end_date: string
+          id: string
+          is_renewal: boolean
+          mou_details: string
+          mou_files: Json
+          profit: number
+          renewal_date: string | null
+          start_date: string
+          timeline: string
+        }
+        Insert: {
+          budget?: number
+          client_id: string
+          costing?: number
+          created_at?: string
+          end_date?: string
+          id?: string
+          is_renewal?: boolean
+          mou_details?: string
+          mou_files?: Json
+          profit?: number
+          renewal_date?: string | null
+          start_date?: string
+          timeline?: string
+        }
+        Update: {
+          budget?: number
+          client_id?: string
+          costing?: number
+          created_at?: string
+          end_date?: string
+          id?: string
+          is_renewal?: boolean
+          mou_details?: string
+          mou_files?: Json
+          profit?: number
+          renewal_date?: string | null
+          start_date?: string
+          timeline?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_contracts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          categories: string[]
+          company: string
+          created_at: string
+          details: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          status: string
+        }
+        Insert: {
+          categories?: string[]
+          company?: string
+          created_at?: string
+          details?: string
+          email?: string
+          id?: string
+          name: string
+          phone?: string
+          status?: string
+        }
+        Update: {
+          categories?: string[]
+          company?: string
+          created_at?: string
+          details?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      employee_categories: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      employee_contracts: {
+        Row: {
+          created_at: string
+          employee_id: string
+          end_date: string
+          id: string
+          is_renewal: boolean
+          mou_details: string
+          mou_files: Json
+          salary: number
+          start_date: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          end_date?: string
+          id?: string
+          is_renewal?: boolean
+          mou_details?: string
+          mou_files?: Json
+          salary?: number
+          start_date?: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          end_date?: string
+          id?: string
+          is_renewal?: boolean
+          mou_details?: string
+          mou_files?: Json
+          salary?: number
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_contracts_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          additional_info: string
+          categories: string[]
+          created_at: string
+          email: string
+          end_date: string
+          id: string
+          mou_details: string
+          mou_files: Json
+          name: string
+          phone: string
+          position: string
+          salary: number
+          start_date: string
+          status: string
+        }
+        Insert: {
+          additional_info?: string
+          categories?: string[]
+          created_at?: string
+          email?: string
+          end_date?: string
+          id?: string
+          mou_details?: string
+          mou_files?: Json
+          name: string
+          phone?: string
+          position?: string
+          salary?: number
+          start_date?: string
+          status?: string
+        }
+        Update: {
+          additional_info?: string
+          categories?: string[]
+          created_at?: string
+          email?: string
+          end_date?: string
+          id?: string
+          mou_details?: string
+          mou_files?: Json
+          name?: string
+          phone?: string
+          position?: string
+          salary?: number
+          start_date?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      expense_categories: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          name: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      invoice_services: {
+        Row: {
+          cost: number
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          service: string
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id: string
+          service?: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          service?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_services_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          client_account: string
+          client_address: string
+          client_brand: string
+          client_cnic: string
+          client_owner: string
+          company_address: string
+          company_email: string
+          company_name: string
+          company_phone: string
+          company_type: string
+          created_at: string
+          founder_account: string
+          founder_cnic: string
+          founder_name: string
+          id: string
+          invoice_date: string
+          invoice_number: string
+          logo_data_url: string | null
+          payment_terms: string
+          title: string
+          total_cost: number
+        }
+        Insert: {
+          client_account?: string
+          client_address?: string
+          client_brand?: string
+          client_cnic?: string
+          client_owner?: string
+          company_address?: string
+          company_email?: string
+          company_name?: string
+          company_phone?: string
+          company_type?: string
+          created_at?: string
+          founder_account?: string
+          founder_cnic?: string
+          founder_name?: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          logo_data_url?: string | null
+          payment_terms?: string
+          title?: string
+          total_cost?: number
+        }
+        Update: {
+          client_account?: string
+          client_address?: string
+          client_brand?: string
+          client_cnic?: string
+          client_owner?: string
+          company_address?: string
+          company_email?: string
+          company_name?: string
+          company_phone?: string
+          company_type?: string
+          created_at?: string
+          founder_account?: string
+          founder_cnic?: string
+          founder_name?: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          logo_data_url?: string | null
+          payment_terms?: string
+          title?: string
+          total_cost?: number
+        }
+        Relationships: []
+      }
+      personal_expenses: {
+        Row: {
+          category: string
+          cost: number
+          created_at: string
+          date: string
+          details: string
+          id: string
+          invoice_files: Json
+          name: string
+        }
+        Insert: {
+          category?: string
+          cost?: number
+          created_at?: string
+          date?: string
+          details?: string
+          id?: string
+          invoice_files?: Json
+          name: string
+        }
+        Update: {
+          category?: string
+          cost?: number
+          created_at?: string
+          date?: string
+          details?: string
+          id?: string
+          invoice_files?: Json
+          name?: string
+        }
+        Relationships: []
+      }
+      task_items: {
+        Row: {
+          created_at: string
+          done: boolean
+          id: string
+          task_list_id: string
+          text: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          task_list_id: string
+          text?: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          task_list_id?: string
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_items_task_list_id_fkey"
+            columns: ["task_list_id"]
+            isOneToOne: false
+            referencedRelation: "task_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_lists: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
