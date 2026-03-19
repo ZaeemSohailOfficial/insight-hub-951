@@ -239,6 +239,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setInvoices(mappedInvoices);
 
       await fetchTasks();
+      // Process repetitive tasks on app open
+      await processRepetitiveTasks();
     } catch (err) {
       console.error('Failed to fetch data:', err);
       toast.error('Failed to load data from database');
