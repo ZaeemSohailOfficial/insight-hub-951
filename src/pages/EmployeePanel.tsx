@@ -80,6 +80,10 @@ export default function EmployeePanel() {
   const [rMouDetails, setRMouDetails] = useState('');
   const [rMouFiles, setRMouFiles] = useState<any[]>([]);
 
+  const resetRenewForm = () => {
+    setRStartDate(undefined); setREndDate(undefined); setRSalary(''); setRMouDetails(''); setRMouFiles([]);
+  };
+
   const handleRenew = () => {
     if (!renewing) return;
     const nc: EmployeeContract = {
@@ -92,7 +96,36 @@ export default function EmployeePanel() {
     updateEmployee(updated);
     setRenewing(null);
     setViewing(updated);
-    setRStartDate(undefined); setREndDate(undefined); setRSalary(''); setRMouDetails(''); setRMouFiles([]);
+    resetRenewForm();
+  };
+
+  const startEditContract = (emp: Employee, contract: EmployeeContract) => {
+    setEditingContract({ emp, contract });
+    setRStartDate(contract.startDate ? new Date(contract.startDate) : undefined);
+    setREndDate(contract.endDate ? new Date(contract.endDate) : undefined);
+    setRSalary(contract.salary.toString());
+    setRMouDetails(contract.mouDetails);
+    setRMouFiles(contract.mouFiles);
+  };
+
+  const handleEditContract = () => {
+    if (!editingContract) return;
+    const updatedContract: EmployeeContract = {
+      ...editingContract.contract,
+      startDate: rStartDate?.toISOString() || editingContract.contract.startDate,
+      endDate: rEndDate?.toISOString() || editingContract.contract.endDate,
+      salary: parseFloat(rSalary) || 0,
+      mouDetails: rMouDetails,
+      mouFiles: rMouFiles,
+    };
+    const updatedEmp = {
+      ...editingContract.emp,
+      contracts: editingContract.emp.contracts.map(c => c.id === updatedContract.id ? updatedContract : c),
+    };
+    updateEmployee(updatedEmp);
+    setEditingContract(null);
+    setViewing(updatedEmp);
+    resetRenewForm();
   };
 
   const handleEdit = () => {
