@@ -361,6 +361,13 @@ export default function PersonalPanel() {
                 </div>
                 <div className="flex items-center gap-3">
                   <p className="font-bold text-foreground">PKR {exp.cost.toLocaleString()}</p>
+                  <button onClick={() => {
+                    const renewed: PersonalExpense = {
+                      ...exp, id: crypto.randomUUID(), date: new Date().toISOString(), createdAt: new Date().toISOString(),
+                    };
+                    addExpense(renewed);
+                    startEditExpense(renewed);
+                  }} className="text-muted-foreground hover:text-accent" title="Renew"><RefreshCw className="w-4 h-4" /></button>
                   <button onClick={() => startEditExpense(exp)} className="text-muted-foreground hover:text-primary"><Edit className="w-4 h-4" /></button>
                   <button onClick={() => deleteExpense(exp.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
                 </div>
