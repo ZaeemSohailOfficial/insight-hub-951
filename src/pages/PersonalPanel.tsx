@@ -13,7 +13,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format, isAfter, isBefore, startOfMonth, endOfMonth } from 'date-fns';
-import { Plus, CalendarIcon, DollarSign, TrendingUp, TrendingDown, Users, Trash2, Building2, Search, Edit, Download } from 'lucide-react';
+import { Plus, CalendarIcon, DollarSign, TrendingUp, TrendingDown, Users, Trash2, Building2, Search, Edit, Download, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import IconPicker, { getIconComponent } from '@/components/IconPicker';
 
@@ -252,43 +252,28 @@ export default function PersonalPanel() {
           </div>
         </div>
 
+        {/* Combined Line Chart */}
         <div className="mb-8">
-          <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Total Revenue</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <AreaChart data={graphData}>
+          <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Revenue vs Costing vs Profit</h3>
+          <ResponsiveContainer width="100%" height={350}>
+            <LineChart data={graphData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 20%)" />
               <XAxis dataKey="month" stroke="hsl(215, 12%, 55%)" fontSize={12} />
-              <YAxis stroke="hsl(215, 12%, 55%)" fontSize={12} />
-              <Tooltip contentStyle={{ background: 'hsl(220, 18%, 13%)', border: '1px solid hsl(220, 14%, 20%)', borderRadius: '8px', color: 'hsl(210, 20%, 92%)' }} />
-              <Area type="monotone" dataKey="revenue" stroke="hsl(210, 100%, 52%)" fill="hsl(210, 100%, 52%)" fillOpacity={0.2} />
-            </AreaChart>
+              <YAxis stroke="hsl(215, 12%, 55%)" fontSize={12} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+              <Tooltip contentStyle={{ background: 'hsl(220, 18%, 13%)', border: '1px solid hsl(220, 14%, 20%)', borderRadius: '8px', color: 'hsl(210, 20%, 92%)' }}
+                formatter={(value: number, name: string) => [`PKR ${value.toLocaleString()}`, name.charAt(0).toUpperCase() + name.slice(1)]} />
+              <Line type="monotone" dataKey="revenue" stroke="hsl(210, 100%, 52%)" strokeWidth={2.5} dot={{ fill: 'hsl(210, 100%, 52%)', r: 4 }} name="Revenue" />
+              <Line type="monotone" dataKey="costing" stroke="hsl(0, 72%, 51%)" strokeWidth={2.5} dot={{ fill: 'hsl(0, 72%, 51%)', r: 4 }} name="Costing" />
+              <Line type="monotone" dataKey="profit" stroke="hsl(160, 60%, 45%)" strokeWidth={2.5} dot={{ fill: 'hsl(160, 60%, 45%)', r: 4 }} name="Profit" />
+              <Line type="monotone" dataKey="employeeCost" stroke="hsl(38, 92%, 50%)" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: 'hsl(38, 92%, 50%)', r: 3 }} name="Employee Cost" />
+            </LineChart>
           </ResponsiveContainer>
-        </div>
-
-        <div className="mb-8">
-          <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Total Costing</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <AreaChart data={graphData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 20%)" />
-              <XAxis dataKey="month" stroke="hsl(215, 12%, 55%)" fontSize={12} />
-              <YAxis stroke="hsl(215, 12%, 55%)" fontSize={12} />
-              <Tooltip contentStyle={{ background: 'hsl(220, 18%, 13%)', border: '1px solid hsl(220, 14%, 20%)', borderRadius: '8px', color: 'hsl(210, 20%, 92%)' }} />
-              <Area type="monotone" dataKey="costing" stroke="hsl(0, 72%, 51%)" fill="hsl(0, 72%, 51%)" fillOpacity={0.2} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="mb-8">
-          <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Profit</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <AreaChart data={graphData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 20%)" />
-              <XAxis dataKey="month" stroke="hsl(215, 12%, 55%)" fontSize={12} />
-              <YAxis stroke="hsl(215, 12%, 55%)" fontSize={12} />
-              <Tooltip contentStyle={{ background: 'hsl(220, 18%, 13%)', border: '1px solid hsl(220, 14%, 20%)', borderRadius: '8px', color: 'hsl(210, 20%, 92%)' }} />
-              <Area type="monotone" dataKey="profit" stroke="hsl(160, 60%, 45%)" fill="hsl(160, 60%, 45%)" fillOpacity={0.2} />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div className="flex items-center justify-center gap-6 mt-3">
+            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ background: 'hsl(210, 100%, 52%)' }} /><span className="text-xs text-muted-foreground">Revenue</span></div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ background: 'hsl(0, 72%, 51%)' }} /><span className="text-xs text-muted-foreground">Costing</span></div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ background: 'hsl(160, 60%, 45%)' }} /><span className="text-xs text-muted-foreground">Profit</span></div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full" style={{ background: 'hsl(38, 92%, 50%)' }} /><span className="text-xs text-muted-foreground">Employee Cost</span></div>
+          </div>
         </div>
 
         <div className="mb-8">
@@ -376,6 +361,13 @@ export default function PersonalPanel() {
                 </div>
                 <div className="flex items-center gap-3">
                   <p className="font-bold text-foreground">PKR {exp.cost.toLocaleString()}</p>
+                  <button onClick={() => {
+                    const renewed: PersonalExpense = {
+                      ...exp, id: crypto.randomUUID(), date: new Date().toISOString(), createdAt: new Date().toISOString(),
+                    };
+                    addExpense(renewed);
+                    startEditExpense(renewed);
+                  }} className="text-muted-foreground hover:text-accent" title="Renew"><RefreshCw className="w-4 h-4" /></button>
                   <button onClick={() => startEditExpense(exp)} className="text-muted-foreground hover:text-primary"><Edit className="w-4 h-4" /></button>
                   <button onClick={() => deleteExpense(exp.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
                 </div>

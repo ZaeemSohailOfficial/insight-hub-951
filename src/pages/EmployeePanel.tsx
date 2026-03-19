@@ -27,6 +27,7 @@ export default function EmployeePanel() {
   const [viewing, setViewing] = useState<Employee | null>(null);
   const [editing, setEditing] = useState<Employee | null>(null);
   const [renewing, setRenewing] = useState<Employee | null>(null);
+  const [editingContract, setEditingContract] = useState<{ emp: Employee; contract: EmployeeContract } | null>(null);
   const [sortBy, setSortBy] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,6 +80,10 @@ export default function EmployeePanel() {
   const [rMouDetails, setRMouDetails] = useState('');
   const [rMouFiles, setRMouFiles] = useState<any[]>([]);
 
+  const resetRenewForm = () => {
+    setRStartDate(undefined); setREndDate(undefined); setRSalary(''); setRMouDetails(''); setRMouFiles([]);
+  };
+
   const handleRenew = () => {
     if (!renewing) return;
     const nc: EmployeeContract = {
@@ -91,7 +96,36 @@ export default function EmployeePanel() {
     updateEmployee(updated);
     setRenewing(null);
     setViewing(updated);
-    setRStartDate(undefined); setREndDate(undefined); setRSalary(''); setRMouDetails(''); setRMouFiles([]);
+    resetRenewForm();
+  };
+
+  const startEditContract = (emp: Employee, contract: EmployeeContract) => {
+    setEditingContract({ emp, contract });
+    setRStartDate(contract.startDate ? new Date(contract.startDate) : undefined);
+    setREndDate(contract.endDate ? new Date(contract.endDate) : undefined);
+    setRSalary(contract.salary.toString());
+    setRMouDetails(contract.mouDetails);
+    setRMouFiles(contract.mouFiles);
+  };
+
+  const handleEditContract = () => {
+    if (!editingContract) return;
+    const updatedContract: EmployeeContract = {
+      ...editingContract.contract,
+      startDate: rStartDate?.toISOString() || editingContract.contract.startDate,
+      endDate: rEndDate?.toISOString() || editingContract.contract.endDate,
+      salary: parseFloat(rSalary) || 0,
+      mouDetails: rMouDetails,
+      mouFiles: rMouFiles,
+    };
+    const updatedEmp = {
+      ...editingContract.emp,
+      contracts: editingContract.emp.contracts.map(c => c.id === updatedContract.id ? updatedContract : c),
+    };
+    updateEmployee(updatedEmp);
+    setEditingContract(null);
+    setViewing(updatedEmp);
+    resetRenewForm();
   };
 
   const handleEdit = () => {
@@ -247,6 +281,7 @@ export default function EmployeePanel() {
             <div key={c.id} className="bg-secondary rounded-lg p-4 mb-4 border border-border">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-foreground">{c.isRenewal ? `Renewal #${idx}` : 'Original Contract'}</h4>
+                <Button variant="ghost" size="sm" onClick={() => startEditContract(emp, c)} className="gap-1"><Edit className="w-3 h-3" /> Edit</Button>
               </div>
               <div className="grid grid-cols-3 gap-4 mb-3">
                 <div><p className="text-xs text-muted-foreground">Start</p><p className="font-medium text-foreground">{c.startDate ? format(new Date(c.startDate), 'PP') : 'N/A'}</p></div>
@@ -284,6 +319,23 @@ export default function EmployeePanel() {
             <DialogHeader><DialogTitle className="font-display">Edit Employee</DialogTitle></DialogHeader>
             {formFields}
             <Button onClick={handleEdit} className="w-full">Save Changes</Button>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Contract Dialog */}
+        <Dialog open={!!editingContract} onOpenChange={o => { if (!o) { setEditingContract(null); resetRenewForm(); } }}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader><DialogTitle className="font-display">Edit Contract</DialogTitle></DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <DatePick date={rStartDate} onSelect={setRStartDate} label="Start Date" />
+                <DatePick date={rEndDate} onSelect={setREndDate} label="End Date" />
+              </div>
+              <div><Label>Salary (PKR)</Label><Input type="number" value={rSalary} onChange={e => setRSalary(e.target.value)} /></div>
+              <div><Label>MOU Details</Label><Textarea value={rMouDetails} onChange={e => setRMouDetails(e.target.value)} rows={3} /></div>
+              <FileUploader files={rMouFiles} onChange={setRMouFiles} />
+              <Button onClick={handleEditContract} className="w-full">Save Changes</Button>
+            </div>
           </DialogContent>
         </Dialog>
 

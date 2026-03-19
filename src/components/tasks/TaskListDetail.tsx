@@ -168,48 +168,46 @@ export default function TaskListDetail({ list, onBack }: Props) {
 
         {!isCollapsed && (
           <>
-            {/* Add task - only for current phase */}
-            {isCurrentPhase && (
-              <div className="space-y-3 mb-4 p-3 rounded-lg bg-background/50 border border-border">
-                <div className="flex gap-2">
-                  <Input value={newTaskText} onChange={e => setNewTaskText(e.target.value)} placeholder="Add a new task..."
-                    onKeyDown={e => e.key === 'Enter' && handleAddTask(phase.id)} className="flex-1" />
-                  <Button onClick={() => handleAddTask(phase.id)} disabled={!newTaskText.trim()} size="sm"><Plus className="w-4 h-4" /></Button>
-                </div>
-                <div className="flex gap-3 items-center flex-wrap">
-                  <Label className="text-xs">Type:</Label>
-                  <Select value={newTaskType} onValueChange={v => setNewTaskType(v as any)}>
-                    <SelectTrigger className="w-[130px] h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="single">Single time</SelectItem>
-                      <SelectItem value="repetitive">Repetitive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {newTaskType === 'repetitive' && (
-                    <>
-                      <Select value={newRepeatInterval} onValueChange={v => setNewRepeatInterval(v as RepeatInterval)}>
-                        <SelectTrigger className="w-[160px] h-8 text-xs"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="daily">Daily</SelectItem>
-                          <SelectItem value="alternative_days">Alternative days</SelectItem>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
-                          <SelectItem value="alternative_months">Alternative months</SelectItem>
-                          <SelectItem value="custom">Custom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {newRepeatInterval === 'custom' && (
-                        <div className="flex items-center gap-1">
-                          <Input type="number" value={newCustomDays} onChange={e => setNewCustomDays(Number(e.target.value))}
-                            className="w-16 h-8 text-xs" min={1} />
-                          <span className="text-xs text-muted-foreground">days</span>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
+            {/* Add task - for all phases */}
+            <div className="space-y-3 mb-4 p-3 rounded-lg bg-background/50 border border-border">
+              <div className="flex gap-2">
+                <Input value={newTaskText} onChange={e => setNewTaskText(e.target.value)} placeholder="Add a new task..."
+                  onKeyDown={e => e.key === 'Enter' && handleAddTask(phase.id)} className="flex-1" />
+                <Button onClick={() => handleAddTask(phase.id)} disabled={!newTaskText.trim()} size="sm"><Plus className="w-4 h-4" /></Button>
               </div>
-            )}
+              <div className="flex gap-3 items-center flex-wrap">
+                <Label className="text-xs">Type:</Label>
+                <Select value={newTaskType} onValueChange={v => setNewTaskType(v as any)}>
+                  <SelectTrigger className="w-[130px] h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single">Single time</SelectItem>
+                    <SelectItem value="repetitive">Repetitive</SelectItem>
+                  </SelectContent>
+                </Select>
+                {newTaskType === 'repetitive' && (
+                  <>
+                    <Select value={newRepeatInterval} onValueChange={v => setNewRepeatInterval(v as RepeatInterval)}>
+                      <SelectTrigger className="w-[160px] h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="alternative_days">Alternative days</SelectItem>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="alternative_months">Alternative months</SelectItem>
+                        <SelectItem value="custom">Custom</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {newRepeatInterval === 'custom' && (
+                      <div className="flex items-center gap-1">
+                        <Input type="number" value={newCustomDays} onChange={e => setNewCustomDays(Number(e.target.value))}
+                          className="w-16 h-8 text-xs" min={1} />
+                        <span className="text-xs text-muted-foreground">days</span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
 
             {/* Two column layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
