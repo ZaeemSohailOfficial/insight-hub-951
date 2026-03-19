@@ -322,6 +322,23 @@ export default function EmployeePanel() {
           </DialogContent>
         </Dialog>
 
+        {/* Edit Contract Dialog */}
+        <Dialog open={!!editingContract} onOpenChange={o => { if (!o) { setEditingContract(null); resetRenewForm(); } }}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader><DialogTitle className="font-display">Edit Contract</DialogTitle></DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <DatePick date={rStartDate} onSelect={setRStartDate} label="Start Date" />
+                <DatePick date={rEndDate} onSelect={setREndDate} label="End Date" />
+              </div>
+              <div><Label>Salary (PKR)</Label><Input type="number" value={rSalary} onChange={e => setRSalary(e.target.value)} /></div>
+              <div><Label>MOU Details</Label><Textarea value={rMouDetails} onChange={e => setRMouDetails(e.target.value)} rows={3} /></div>
+              <FileUploader files={rMouFiles} onChange={setRMouFiles} />
+              <Button onClick={handleEditContract} className="w-full">Save Changes</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <AlertDialog open={!!deleteId} onOpenChange={o => !o && setDeleteId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
