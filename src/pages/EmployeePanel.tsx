@@ -281,6 +281,7 @@ export default function EmployeePanel() {
             <div key={c.id} className="bg-secondary rounded-lg p-4 mb-4 border border-border">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-foreground">{c.isRenewal ? `Renewal #${idx}` : 'Original Contract'}</h4>
+                <Button variant="ghost" size="sm" onClick={() => startEditContract(emp, c)} className="gap-1"><Edit className="w-3 h-3" /> Edit</Button>
               </div>
               <div className="grid grid-cols-3 gap-4 mb-3">
                 <div><p className="text-xs text-muted-foreground">Start</p><p className="font-medium text-foreground">{c.startDate ? format(new Date(c.startDate), 'PP') : 'N/A'}</p></div>
