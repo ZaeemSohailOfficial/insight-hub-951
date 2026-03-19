@@ -27,6 +27,7 @@ export default function EmployeePanel() {
   const [viewing, setViewing] = useState<Employee | null>(null);
   const [editing, setEditing] = useState<Employee | null>(null);
   const [renewing, setRenewing] = useState<Employee | null>(null);
+  const [editingContract, setEditingContract] = useState<{ emp: Employee; contract: EmployeeContract } | null>(null);
   const [sortBy, setSortBy] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
