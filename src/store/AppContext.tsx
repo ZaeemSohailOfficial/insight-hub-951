@@ -255,7 +255,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.from('clients').insert({
       id: c.id, name: c.name, email: c.email, phone: c.phone,
       company: c.company, details: c.details, categories: c.categories,
-      status: c.status, created_at: c.createdAt,
+      status: c.status, position: c.position, created_at: c.createdAt,
     });
     if (error) { toast.error('Failed to save client'); console.error(error); return; }
     if (c.contracts.length > 0) {
