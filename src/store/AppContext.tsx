@@ -173,7 +173,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const mappedClients: Client[] = (clientRows || []).map((c: any) => ({
         id: c.id, name: c.name, email: c.email, phone: c.phone,
         company: c.company, details: c.details, categories: c.categories || [],
-        status: c.status as 'in-progress' | 'completed', createdAt: c.created_at,
+        status: c.status as 'in-progress' | 'completed', position: c.position || 0, createdAt: c.created_at,
         contracts: (contractRows || [])
           .filter((ct: any) => ct.client_id === c.id)
           .map((ct: any): Contract => ({
