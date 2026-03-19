@@ -69,6 +69,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [taskCategories, setTaskCategories] = useState<TaskCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
+  function getIntervalDays(interval: string | null, customDays: number | null): number {
+    switch (interval) {
+      case 'daily': return 1;
+      case 'alternative_days': return 2;
+      case 'weekly': return 7;
+      case 'monthly': return 30;
+      case 'alternative_months': return 60;
+      case 'custom': return customDays || 1;
+      default: return 0;
+    }
+  }
+
   const fetchTasks = useCallback(async () => {
     const [
       { data: folderRows },
