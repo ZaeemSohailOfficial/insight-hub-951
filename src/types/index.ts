@@ -35,6 +35,7 @@ export interface Client {
   categories: string[];
   contracts: Contract[];
   status: 'in-progress' | 'completed';
+  position: number;
   createdAt: string;
 }
 

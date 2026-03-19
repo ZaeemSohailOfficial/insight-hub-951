@@ -32,6 +32,9 @@ export default function ClientPanel() {
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  // Edit renewal state
+  const [editRenewalIdx, setEditRenewalIdx] = useState<number | null>(null);
+
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPhone, setFormPhone] = useState('');
@@ -45,11 +48,12 @@ export default function ClientPanel() {
   const [formMouDetails, setFormMouDetails] = useState('');
   const [formMouFiles, setFormMouFiles] = useState<any[]>([]);
   const [formStatus, setFormStatus] = useState<'in-progress' | 'completed'>('in-progress');
+  const [formPosition, setFormPosition] = useState(0);
 
   const resetForm = () => {
     setFormName(''); setFormEmail(''); setFormPhone(''); setFormCompany(''); setFormDetails('');
     setFormCategories([]); setFormStartDate(undefined); setFormEndDate(undefined);
-    setFormBudget(''); setFormCosting(''); setFormMouDetails(''); setFormMouFiles([]); setFormStatus('in-progress');
+    setFormBudget(''); setFormCosting(''); setFormMouDetails(''); setFormMouFiles([]); setFormStatus('in-progress'); setFormPosition(0);
   };
 
   const handleAddClient = () => {
@@ -60,6 +64,7 @@ export default function ClientPanel() {
       name: formName, email: formEmail, phone: formPhone,
       company: formCompany, details: formDetails,
       categories: formCategories, status: formStatus,
+      position: formPosition,
       createdAt: new Date().toISOString(),
       contracts: [{
         id: crypto.randomUUID(),
@@ -103,31 +108,56 @@ export default function ClientPanel() {
     if (!editingClient) return;
     const budget = parseFloat(formBudget) || 0;
     const costing = parseFloat(formCosting) || 0;
+
+    let updatedContracts = [...editingClient.contracts];
+    if (editRenewalIdx !== null && editRenewalIdx >= 0) {
+      // Editing a specific contract (renewal or original)
+      updatedContracts[editRenewalIdx] = {
+        ...updatedContracts[editRenewalIdx],
+        startDate: formStartDate?.toISOString() || updatedContracts[editRenewalIdx].startDate,
+        endDate: formEndDate?.toISOString() || updatedContracts[editRenewalIdx].endDate,
+        budget, costing, profit: budget - costing,
+        mouDetails: formMouDetails, mouFiles: formMouFiles,
+        timeline: formStartDate && formEndDate ? `${differenceInDays(formEndDate, formStartDate)} days` : updatedContracts[editRenewalIdx].timeline,
+      };
+    } else {
+      // Legacy: editing first contract + client info
+      updatedContracts[0] = {
+        ...updatedContracts[0],
+        startDate: formStartDate?.toISOString() || updatedContracts[0].startDate,
+        endDate: formEndDate?.toISOString() || updatedContracts[0].endDate,
+        budget, costing, profit: budget - costing,
+        mouDetails: formMouDetails, mouFiles: formMouFiles,
+        timeline: formStartDate && formEndDate ? `${differenceInDays(formEndDate, formStartDate)} days` : updatedContracts[0].timeline,
+      };
+    }
+
     const updated: Client = {
       ...editingClient,
       name: formName, email: formEmail, phone: formPhone,
       company: formCompany, details: formDetails,
       categories: formCategories, status: formStatus,
-      contracts: editingClient.contracts.map((c, i) => i === 0
-        ? { ...c, startDate: formStartDate?.toISOString() || c.startDate, endDate: formEndDate?.toISOString() || c.endDate, budget, costing, profit: budget - costing, mouDetails: formMouDetails, mouFiles: formMouFiles,
-            timeline: formStartDate && formEndDate ? `${differenceInDays(formEndDate, formStartDate)} days` : c.timeline }
-        : c),
+      position: formPosition,
+      contracts: updatedContracts,
     };
     updateClient(updated);
     setEditingClient(null);
+    setEditRenewalIdx(null);
     setViewingClient(updated);
     resetForm();
   };
 
-  const startEdit = (client: Client) => {
-    const c = client.contracts[0];
+  const startEdit = (client: Client, contractIdx: number = 0) => {
+    const c = client.contracts[contractIdx];
     setFormName(client.name); setFormEmail(client.email); setFormPhone(client.phone);
     setFormCompany(client.company); setFormDetails(client.details);
     setFormCategories(client.categories); setFormStatus(client.status);
+    setFormPosition(client.position);
     setFormStartDate(c?.startDate ? new Date(c.startDate) : undefined);
     setFormEndDate(c?.endDate ? new Date(c.endDate) : undefined);
     setFormBudget(c?.budget?.toString() || ''); setFormCosting(c?.costing?.toString() || '');
     setFormMouDetails(c?.mouDetails || ''); setFormMouFiles(c?.mouFiles || []);
+    setEditRenewalIdx(contractIdx);
     setEditingClient(client);
   };
 
@@ -145,6 +175,9 @@ export default function ClientPanel() {
     if (searchQuery && !c.name.toLowerCase().includes(searchQuery.toLowerCase()) && !c.company.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
+
+  // Default sort by position
+  filtered.sort((a, b) => a.position - b.position);
 
   if (sortBy === 'budget-high') filtered.sort((a, b) => (b.contracts[0]?.budget || 0) - (a.contracts[0]?.budget || 0));
   if (sortBy === 'budget-low') filtered.sort((a, b) => (a.contracts[0]?.budget || 0) - (b.contracts[0]?.budget || 0));
@@ -194,10 +227,11 @@ export default function ClientPanel() {
                 <Badge variant={client.status === 'in-progress' ? 'default' : 'secondary'}>
                   {client.status === 'in-progress' ? <><Loader2 className="w-3 h-3 mr-1" /> In Progress</> : <><CheckCircle className="w-3 h-3 mr-1" /> Completed</>}
                 </Badge>
+                <Badge variant="outline">Position: {client.position}</Badge>
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => startEdit(client)} className="gap-1"><Edit className="w-4 h-4" /> Edit</Button>
+              <Button variant="outline" size="sm" onClick={() => startEdit(client, 0)} className="gap-1"><Edit className="w-4 h-4" /> Edit</Button>
               <Button variant="outline" size="sm" onClick={() => setRenewClient(client)} className="gap-1"><RefreshCw className="w-4 h-4" /> Renew</Button>
               <Button variant="outline" size="sm" onClick={() => {
                 const updated = { ...client, status: client.status === 'in-progress' ? 'completed' as const : 'in-progress' as const };
@@ -223,7 +257,12 @@ export default function ClientPanel() {
             <div key={contract.id} className="bg-secondary rounded-lg p-4 mb-4 border border-border">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-foreground">{contract.isRenewal ? `Renewal #${idx}` : 'Original Contract'}</h4>
-                <Badge variant="outline">{contract.timeline}</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">{contract.timeline}</Badge>
+                  <Button variant="ghost" size="sm" onClick={() => startEdit(client, idx)} className="gap-1">
+                    <Edit className="w-3 h-3" /> Edit
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
                 <div><p className="text-xs text-muted-foreground">Start Date</p><p className="font-medium text-foreground">{contract.startDate ? format(new Date(contract.startDate), 'PP') : 'N/A'}</p></div>
@@ -264,9 +303,11 @@ export default function ClientPanel() {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={!!editingClient} onOpenChange={o => { if (!o) { setEditingClient(null); resetForm(); } }}>
+        <Dialog open={!!editingClient} onOpenChange={o => { if (!o) { setEditingClient(null); setEditRenewalIdx(null); resetForm(); } }}>
           <DialogContent className="max-w-2xl">
-            <DialogHeader><DialogTitle className="font-display">Edit Client</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle className="font-display">
+              {editRenewalIdx !== null && editRenewalIdx > 0 ? `Edit Renewal #${editRenewalIdx}` : 'Edit Client'}
+            </DialogTitle></DialogHeader>
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin">
               <div className="grid grid-cols-2 gap-4">
                 <div><Label>Client Name *</Label><Input value={formName} onChange={e => setFormName(e.target.value)} placeholder="Client name" /></div>
@@ -304,15 +345,18 @@ export default function ClientPanel() {
               </div>
               <div><Label>MOU / Contract Details</Label><Textarea value={formMouDetails} onChange={e => setFormMouDetails(e.target.value)} rows={3} /></div>
               <FileUploader files={formMouFiles} onChange={setFormMouFiles} label="Upload MOU / Contract Files" />
-              <div>
-                <Label>Status</Label>
-                <Select value={formStatus} onValueChange={v => setFormStatus(v as any)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="in-progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Status</Label>
+                  <Select value={formStatus} onValueChange={v => setFormStatus(v as any)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Position (Order)</Label><Input type="number" value={formPosition} onChange={e => setFormPosition(Number(e.target.value))} min={0} /></div>
               </div>
             </div>
             <Button onClick={handleEdit} className="w-full">Save Changes</Button>
@@ -385,15 +429,18 @@ export default function ClientPanel() {
               </div>
               <div><Label>MOU / Contract Details</Label><Textarea value={formMouDetails} onChange={e => setFormMouDetails(e.target.value)} rows={3} /></div>
               <FileUploader files={formMouFiles} onChange={setFormMouFiles} label="Upload MOU / Contract Files" />
-              <div>
-                <Label>Status</Label>
-                <Select value={formStatus} onValueChange={v => setFormStatus(v as any)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="in-progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Status</Label>
+                  <Select value={formStatus} onValueChange={v => setFormStatus(v as any)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Position (Order)</Label><Input type="number" value={formPosition} onChange={e => setFormPosition(Number(e.target.value))} min={0} placeholder="0 = top" /></div>
               </div>
             </div>
             <Button onClick={handleAddClient} className="w-full" disabled={!formName}>Add Client</Button>
@@ -437,9 +484,12 @@ export default function ClientPanel() {
                 <h3 className="font-display font-semibold text-foreground">{client.name}</h3>
                 <p className="text-sm text-muted-foreground">{client.company}</p>
               </div>
-              <Badge variant={client.status === 'in-progress' ? 'default' : 'secondary'} className="text-xs">
-                {client.status === 'in-progress' ? 'Active' : 'Done'}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs">#{client.position}</Badge>
+                <Badge variant={client.status === 'in-progress' ? 'default' : 'secondary'} className="text-xs">
+                  {client.status === 'in-progress' ? 'Active' : 'Done'}
+                </Badge>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="flex items-center gap-1 text-muted-foreground"><DollarSign className="w-3 h-3" /> PKR {client.contracts[0]?.budget?.toLocaleString() || '0'}</div>
