@@ -13,7 +13,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format, isAfter, isBefore, startOfMonth, endOfMonth } from 'date-fns';
-import { Plus, CalendarIcon, DollarSign, TrendingUp, TrendingDown, Users, Trash2, Building2, Search, Edit, Download } from 'lucide-react';
+import { Plus, CalendarIcon, DollarSign, TrendingUp, TrendingDown, Users, Trash2, Building2, Search, Edit, Download, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import IconPicker, { getIconComponent } from '@/components/IconPicker';
 
