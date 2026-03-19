@@ -69,59 +69,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [taskCategories, setTaskCategories] = useState<TaskCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const processRepetitiveTasks = useCallback(async () => {
-    try {
-      const { data: currentPhases } = await supabase.from('task_phases').select('*').eq('is_current', true);
-      if (!currentPhases || currentPhases.length === 0) return;
-
-      const now = new Date();
-      for (const phase of currentPhases) {
-        const { data: repetitiveTasks } = await supabase
-          .from('task_items').select('*')
-          .eq('phase_id', phase.id).eq('task_type', 'repetitive');
-        if (!repetitiveTasks || repetitiveTasks.length === 0) continue;
-
-        const phaseCreatedAt = new Date(phase.created_at);
-        let shouldCreateNewPhase = false;
-
-        for (const task of repetitiveTasks) {
-          const intervalDays = getIntervalDays(task.repeat_interval, task.custom_interval_days);
-          if (intervalDays <= 0) continue;
-          const nextDue = new Date(phaseCreatedAt.getTime() + intervalDays * 24 * 60 * 60 * 1000);
-          if (now >= nextDue) { shouldCreateNewPhase = true; break; }
-        }
-        if (!shouldCreateNewPhase) continue;
-
-        const newPhaseNumber = phase.phase_number + 1;
-        const newPhaseId = crypto.randomUUID();
-        await supabase.from('task_phases').update({ is_current: false }).eq('id', phase.id);
-        await supabase.from('task_phases').insert({
-          id: newPhaseId, task_list_id: phase.task_list_id,
-          name: `Phase ${newPhaseNumber} (Auto)`, phase_number: newPhaseNumber, is_current: true,
-        });
-        const newTasks = repetitiveTasks.map(task => ({
-          id: crypto.randomUUID(), task_list_id: phase.task_list_id, phase_id: newPhaseId,
-          text: task.text, done: false, task_type: 'repetitive',
-          repeat_interval: task.repeat_interval, custom_interval_days: task.custom_interval_days,
-        }));
-        if (newTasks.length > 0) await supabase.from('task_items').insert(newTasks);
-      }
-      await fetchTasks();
-    } catch (err) { console.error('processRepetitiveTasks error:', err); }
-  }, [fetchTasks]);
-
-  function getIntervalDays(interval: string | null, customDays: number | null): number {
-    switch (interval) {
-      case 'daily': return 1;
-      case 'alternative_days': return 2;
-      case 'weekly': return 7;
-      case 'monthly': return 30;
-      case 'alternative_months': return 60;
-      case 'custom': return customDays || 1;
-      default: return 0;
-    }
-  }
-
   const fetchTasks = useCallback(async () => {
     const [
       { data: folderRows },
@@ -166,7 +113,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
             })),
         }));
 
-      // Legacy tasks without phase
       const legacyTasks = (taskItemRows || [])
         .filter((ti: any) => ti.task_list_id === tl.id && !ti.phase_id)
         .map((ti: any): TaskItem => ({
@@ -194,6 +140,49 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTaskCategories(mappedCats);
     setTaskLists(mappedTaskLists);
   }, []);
+
+  const processRepetitiveTasks = useCallback(async () => {
+    try {
+      const { data: currentPhases } = await supabase.from('task_phases').select('*').eq('is_current', true);
+      if (!currentPhases || currentPhases.length === 0) return;
+
+      const now = new Date();
+      let changed = false;
+      for (const phase of currentPhases) {
+        const { data: repetitiveTasks } = await supabase
+          .from('task_items').select('*')
+          .eq('phase_id', phase.id).eq('task_type', 'repetitive');
+        if (!repetitiveTasks || repetitiveTasks.length === 0) continue;
+
+        const phaseCreatedAt = new Date(phase.created_at);
+        let shouldCreateNewPhase = false;
+
+        for (const task of repetitiveTasks) {
+          const intervalDays = getIntervalDays(task.repeat_interval, task.custom_interval_days);
+          if (intervalDays <= 0) continue;
+          const nextDue = new Date(phaseCreatedAt.getTime() + intervalDays * 24 * 60 * 60 * 1000);
+          if (now >= nextDue) { shouldCreateNewPhase = true; break; }
+        }
+        if (!shouldCreateNewPhase) continue;
+
+        const newPhaseNumber = phase.phase_number + 1;
+        const newPhaseId = crypto.randomUUID();
+        await supabase.from('task_phases').update({ is_current: false }).eq('id', phase.id);
+        await supabase.from('task_phases').insert({
+          id: newPhaseId, task_list_id: phase.task_list_id,
+          name: `Phase ${newPhaseNumber} (Auto)`, phase_number: newPhaseNumber, is_current: true,
+        });
+        const newTasks = repetitiveTasks.map(task => ({
+          id: crypto.randomUUID(), task_list_id: phase.task_list_id, phase_id: newPhaseId,
+          text: task.text, done: false, task_type: 'repetitive',
+          repeat_interval: task.repeat_interval, custom_interval_days: task.custom_interval_days,
+        }));
+        if (newTasks.length > 0) await supabase.from('task_items').insert(newTasks);
+        changed = true;
+      }
+      if (changed) await fetchTasks();
+    } catch (err) { console.error('processRepetitiveTasks error:', err); }
+  }, [fetchTasks]);
 
   // ── Fetch all data on mount ──
   const fetchAll = useCallback(async () => {
