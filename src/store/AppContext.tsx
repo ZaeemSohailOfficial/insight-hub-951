@@ -275,7 +275,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setClients(prev => prev.map(x => x.id === c.id ? c : x));
     await supabase.from('clients').update({
       name: c.name, email: c.email, phone: c.phone,
-      company: c.company, details: c.details, categories: c.categories, status: c.status,
+      company: c.company, details: c.details, categories: c.categories, status: c.status, position: c.position,
     }).eq('id', c.id);
     await supabase.from('client_contracts').delete().eq('client_id', c.id);
     if (c.contracts.length > 0) {
